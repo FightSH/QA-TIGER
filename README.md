@@ -1,7 +1,7 @@
 # QA-TIGER
 Official repository for "Question-Aware Gaussian Experts for Audio-Visual Question Answering" in CVPR 2025.
 
-> [Hongyeob Kim<sup>1*](https://github.com/redleaf-kim), [Inyoung Jung<sup>1*](https://github.com/nanacoco419), [Dayoon Suh<sup>2</sup>](), [Sangmin Lee<sup>1](https://sites.google.com/view/sangmin-lee/home) [Sungeun Hong<sup>1</sup>&dagger;](https://www.csehong.com/) <br>
+> [Hongyeob Kim<sup>1*](https://github.com/redleaf-kim), [Inyoung Jung<sup>1*](https://github.com/nanacoco419), [Dayoon Suh<sup>2</sup>](https://github.com/dayoonsuh), [Sangmin Lee<sup>1](https://sites.google.com/view/sangmin-lee/home) [Sungeun Hong<sup>1</sup>&dagger;](https://www.csehong.com/) <br>
 > <sup>1</sup>[Sungkyunkwan University](https://www.skku.edu/eng/index.do), <sup>2</sup>[Purdue University](https://www.purdue.edu/)
 
 <p align=center><img src="./images/main_figure.png" width="1024px"></p>
@@ -28,7 +28,8 @@ pytorch2.4.0
     - with conda
     ```
     conda create -n qa-tiger python=3.10
-    conda install --yes --file requirements.txt
+    conda activate qa-tiger
+    pip install -e .
     ```
 
     - with pip
