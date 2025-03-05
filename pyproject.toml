@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=75.1.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qa-tiger"
+version = "0.1.0"
+description = "[CVPR2025] Question-Aware Gaussian Experts for Audio-Visual Question Answering"
+authors = [
+    { name = "Hongyeob Kim", email = "redleaf.kim@skku.edu" },
+]
+
+dependencies = [
+    "distro==1.9.0",
+    "ftfy==6.2.3",
+    "numpy==1.23.1",
+    "pillow==9.3.0",
+    "python-box==7.3.2",
+    "scikit-learn==1.3.2",
+    "scipy==1.10.1",
+    "tqdm==4.66.4",
+    "transformers==4.45.2",
+    "typing-extensions==4.12.2",
+    "huggingface-hub==0.25.2",
+    "torch==2.4.0",
+    "torchaudio==2.4.0",
+    "torchvision==0.19.0"
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8"
+]
+
+[project.urls]
+homepage = "https://aim-skku.github.io/QA-TIGER/"
+repository = "https://github.com/AIM-SKKU/QA-TIGER"
