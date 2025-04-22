@@ -1,4 +1,4 @@
-# Question-Aware Gaussian Experts for Audio-Visual Question Answering (CVPR 2025)
+# Question-Aware Gaussian Experts for Audio-Visual Question Answering (CVPR 2025, Highlight)
 Official repository for "Question-Aware Gaussian Experts for Audio-Visual Question Answering" in CVPR 2025.
 
 ### [Paper]() | [arXiv](https://arxiv.org/abs/2503.04459) | [Project Page](https://aim-skku.github.io/QA-TIGER/)
@@ -37,6 +37,12 @@ pytorch2.4.0
     - with pip
     ```
     pip install -e .
+    ```
+    
+    - with uv
+    ```
+    uv sync
+    source .venv/bin/activate
     ```
 
 2. **Prepare data**
@@ -78,7 +84,7 @@ pytorch2.4.0
 
 ### Checkpoints
 
-- will be uploaded soon
+- [QA-TIGER with ViT-L/14@336px](https://huggingface.co/redleaf-Kim/qa-tiger)
 
 
 ### Citation
