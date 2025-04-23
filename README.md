@@ -92,14 +92,11 @@ pytorch2.4.0
 If you find this work useful, please consider citing it.
 
 ```
-@misc{kim2025questionawaregaussianexpertsaudiovisual,
-      title={Question-Aware Gaussian Experts for Audio-Visual Question Answering}, 
-      author={Hongyeob Kim and Inyoung Jung and Dayoon Suh and Youjia Zhang and Sangmin Lee and Sungeun Hong},
-      year={2025},
-      eprint={2503.04459},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2503.04459}, 
+@article{hy2025qatiger,
+    title={Question-Aware Gaussian Experts for Audio-Visual Question Answering}, 
+    author={Hongyeob Kim and Inyoung Jung and Dayoon Suh and Youjia Zhang and Sangmin Lee and Sungeun Hong},
+    journal={arXiv preprint arXiv:2503.04459},
+    year={2025}
 }
 ```
 
