@@ -1,17 +1,15 @@
 # 导入必要的库
 import os
 import torch
-from torchvision import transforms, utils
 from PIL import Image
 import numpy as np
 import glob
 
 # 导入CLIP模型相关模块
-import clip_net.clip
 
 # 设置设备（优先使用GPU，否则使用CPU）
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip_net.clip.load("ViT-B/32", device=device)
+model, preprocess = scripts.extract_clip_feat.clip_net.clip.load("ViT-B/32", device=device)
 
 def clip_feat_extract(img):
     """

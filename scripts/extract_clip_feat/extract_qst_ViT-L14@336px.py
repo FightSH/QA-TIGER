@@ -1,14 +1,7 @@
 import os
 import torch
-from torchvision import transforms, utils
-from PIL import Image
 import numpy as np
-import glob
 import json
-import ast
-import csv
-
-import clip_net.clip
 
 # 导入项目中的 CLIP 模型模块
 
@@ -16,7 +9,7 @@ import clip_net.clip
 device = "cuda:2" if torch.cuda.is_available() else "cpu"
 
 # 加载预训练的 ViT-L/14@336px 模型及其图像预处理方法
-model, preprocess = clip_net.clip.load("ViT-L/14@336px", device=device)
+model, preprocess = scripts.extract_clip_feat.clip_net.clip.load("ViT-L/14@336px", device=device)
 
 
 def qst_feat_extract(qst):
@@ -30,7 +23,7 @@ def qst_feat_extract(qst):
         text_features (torch.Tensor): 提取的文本特征向量
     """
     # 对文本进行 token 化并移动到 GPU
-    text = clip_net.clip.tokenize(qst).to(device)
+    text = scripts.extract_clip_feat.clip_net.clip.tokenize(qst).to(device)
 
     # 不计算梯度以提升推理速度
     with torch.no_grad():

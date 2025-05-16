@@ -9,8 +9,9 @@ from PIL import Image
 import numpy as np
 import argparse
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 class Identity(nn.Module):
 
     def __init__(self):

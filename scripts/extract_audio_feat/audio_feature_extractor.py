@@ -1,7 +1,7 @@
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # set gpu number
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # set gpu number
 import numpy as np
 import tensorflow as tf
 
@@ -33,7 +33,7 @@ freq = 1000
 sr = 44100
 
 audio_dir = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/audio/"  # .wav audio files
-save_dir = "./mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/vggish/"
+save_dir = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/vggish/"
 
 lis = sorted(os.listdir(audio_dir))
 len_data = len(lis)

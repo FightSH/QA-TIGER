@@ -1,17 +1,10 @@
 import os
 import torch
-from torchvision import transforms, utils
-from PIL import Image
 import numpy as np
-import glob
 import json
-import ast
-import csv
-
-import clip_net.clip
 
 device = "cuda:3" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip_net.clip.load("ViT-L/14@336px", device=device)
+model, preprocess = scripts.extract_clip_feat.clip_net.clip.load("ViT-L/14@336px", device=device)
 
 
 def QuestionPromptMatching(question_content, templ_values):
@@ -188,7 +181,7 @@ def QuestionPromptMatching(question_content, templ_values):
 
 def qst_feat_extract(qst):
 
-    text = clip_net.clip.tokenize(qst).to(device)
+    text = scripts.extract_clip_feat.clip_net.clip.tokenize(qst).to(device)
     
     with torch.no_grad():
         text_features = model.encode_text(text)
