@@ -11,6 +11,9 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
+import os
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
 from src.utils import (
     arg_parse, seed_everything, setting, get_logger,
     set_logger, logging_config

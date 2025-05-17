@@ -30,7 +30,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 def arg_parse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='PyTorch Implementation of Audio-Visual Question Answering')
-    parser.add_argument('--config', type=str, default='./configs/stage2.py', help='Path to the config file')
+    parser.add_argument('--config', type=str, default='/mnt/sda/shenhao/code/QA-TIGER/configs/qa-tiger/vitl14.py', help='Path to the config file')
     parser.add_argument('--distributed', action='store_true', help='Use Distributed Data Parallel (DDP) if set; otherwise use Data Parallel (DP)')
     parser.add_argument('--debug', action='store_true', help='Debugging')
     parser.add_argument('--weight', type=str, default='', help='Path to the model weight file')

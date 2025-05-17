@@ -8,8 +8,8 @@ import glob
 import clip_net.clip
 
 # 设置设备（优先使用GPU，否则使用CPU）
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # set gpu number
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # set gpu number
+device = "cuda:3" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip_net.clip.load("ViT-L/14@336px", device=device)
 
 
@@ -75,7 +75,7 @@ def ImageClIP_feat_extract(dir_fps_path, dst_clip_path):
         video_img_list = sorted(glob.glob(os.path.join(dir_fps_path, video, '*.jpg')))
 
         # params_frames = 60
-        params_frames = len(video_img_list)
+        params_frames = len(video_img_list) - 2
         samples = np.round(np.linspace(0, params_frames - 1, params_frames))
 
         img_list = [video_img_list[int(sample)] for sample in samples]
@@ -135,6 +135,6 @@ if __name__ == "__main__":
 
     # 165
     dir_fps_path = '/mnt/sda/shenhao/datasets/MUSIC-AVQA/avqa_frame_1fps'
-    dst_clip_path = '/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/clip_feats/frame_1fps_ViT-L14@336px/'
+    dst_clip_path = '/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/clip_feats/1fps/'
     ImageClIP_feat_extract(dir_fps_path, dst_clip_path)
 
