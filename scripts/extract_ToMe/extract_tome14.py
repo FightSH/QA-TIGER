@@ -69,16 +69,19 @@ def TransformImage(img, input_size, mean, std):
 
 
 
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", dest='gpu', type=str, default='0',
+    parser.add_argument("--gpu", dest='gpu', type=str, default='3',
                         help='Set CUDA_VISIBLE_DEVICES environment variable, optional')
     parser.add_argument("--dir_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/avqa_frame_1fps/',
                         help='sec path')
-    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14',
+    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14_60',
                         help='sec save path')
-    parser.add_argument("--sample_frames", type=int, default=10, help='sample frames')
+    parser.add_argument("--sample_frames", type=int, default=60, help='sample frames')
     parser.add_argument("--tokens", type=int, default=14, help='merge tokens numbers')
     parser.add_argument("--layers", type=int, default=23, help='merge tokens layers, 25, 23, 22, 20, 16, 8')
     parser.add_argument("--model_name", type=str, default="vit_large_patch16_384", help='model_name')
@@ -87,7 +90,7 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     params = vars(args)
 
     model_name = args.model_name

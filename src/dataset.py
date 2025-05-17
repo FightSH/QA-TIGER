@@ -126,7 +126,7 @@ class AVQA_dataset(Dataset):
             # 如果没有预计算的问题特征，则在线进行tokenize
             question = sample['question_content']
             quest = self.tokenizer(question, truncate=True).squeeze() # 使用CLIP tokenizer
-            prompt = self.tokenizer(sample['qprompt'], truncate=True).squeeze() # 对问题提示进行tokenize
+            # prompt = self.tokenizer(sample['qprompt'], truncate=True).squeeze() # 对问题提示进行tokenize
         
         # 加载视频帧/特征
         name = sample['video_id'] # 视频文件名或ID
@@ -166,7 +166,7 @@ class AVQA_dataset(Dataset):
         # 组织返回的数据字典
         data = {
             'quest': quest, # 问题特征或tokenized问题
-            'prompt': prompt, # 提示特征或tokenized提示
+            # 'prompt': prompt, # 提示特征或tokenized提示
             'type': ques_type_list, # 问题类型列表 (例如 ['Audio', 'Counting'])
             'label': labels, # 答案的数字标签
             'qtype_label': qtype_label, # 问题类型的数字标签

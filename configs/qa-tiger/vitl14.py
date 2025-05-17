@@ -12,7 +12,7 @@ config = dict(
 		img_size=336,  # 输入图像的尺寸 (ViT-L/14@336px 模型需要336x336的图像)
 		batch_size=32,  # 训练时的批量大小
 		eval_batch_size=32,  # 验证/测试时的批量大小
-		num_workers=16,  # 数据加载时使用的工作进程数
+		num_workers=0,  # 数据加载时使用的工作进程数
 		frame_sample_rate=1,  # 视频帧的采样率 (例如，每隔1帧取1帧)
 
 		audios_dir='./raw_audios',  # 原始音频文件的存放目录 (如果直接从原始文件加载)

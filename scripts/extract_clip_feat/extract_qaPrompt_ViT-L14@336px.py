@@ -3,8 +3,10 @@ import torch
 import numpy as np
 import json
 
+from scripts.extract_clip_feat import clip_net
+
 device = "cuda:3" if torch.cuda.is_available() else "cpu"
-model, preprocess = scripts.extract_clip_feat.clip_net.clip.load("ViT-L/14@336px", device=device)
+model, preprocess = clip_net.clip.load("ViT-L/14@336px", device=device)
 
 
 def QuestionPromptMatching(question_content, templ_values):
