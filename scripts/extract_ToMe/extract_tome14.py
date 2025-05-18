@@ -79,7 +79,7 @@ if __name__ == "__main__":
                         help='Set CUDA_VISIBLE_DEVICES environment variable, optional')
     parser.add_argument("--dir_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/avqa_frame_1fps/',
                         help='sec path')
-    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14_60',
+    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14',
                         help='sec save path')
     parser.add_argument("--sample_frames", type=int, default=60, help='sample frames')
     parser.add_argument("--tokens", type=int, default=14, help='merge tokens numbers')
@@ -127,8 +127,25 @@ if __name__ == "__main__":
         img_list_path = os.path.join(args.dir_path, video_name)
         img_list_all = os.listdir(img_list_path)
 
-        samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
-        img_list = [img_list_all[int(sample)] for sample in samples]
+        target_frames = args.sample_frames
+        actual_num_frames = len(img_list_all)
+
+        if actual_num_frames >= target_frames:
+            # 视频帧数足够或更多：均匀采样 target_frames 帧
+            indices = np.round(np.linspace(0, actual_num_frames - 1, target_frames)).astype(int)
+            img_list = [img_list_all[i] for i in indices]
+        else:
+            # 视频帧数不足 target_frames：取所有帧，然后用最后一帧填充
+            img_list = list(img_list_all)  # 取所有可用帧
+            num_padding = target_frames - actual_num_frames
+            if num_padding > 0 and img_list:  # 确保有帧可以用来填充
+                padding_frame_path = img_list[-1]  # 用最后一帧进行填充
+                img_list.extend([padding_frame_path] * num_padding)
+            elif not img_list:  # 理论上不会到这里，因为上面有 actual_num_frames == 0 的检查
+                continue
+
+        # samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
+        # img_list = [img_list_all[int(sample)] for sample in samples]
 
         token_feat = torch.zeros([args.sample_frames, args.tokens, 1024])
 

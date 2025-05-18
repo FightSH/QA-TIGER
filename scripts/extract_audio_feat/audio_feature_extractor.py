@@ -25,6 +25,43 @@ def get_audio_len(audio_file):
         return wav_length
 
 
+# 添加处理短音频的函数
+def process_audio_with_padding(audio_file, target_length=60):
+    """处理音频文件，如果长度不足则用最后1秒填充"""
+    sr, snd = wavfile.read(audio_file)
+
+    # 如果音频长度不足target_length秒
+    if snd.shape[0] < sr * target_length:
+        # 获取实际音频长度（秒）
+        actual_length = snd.shape[0] / sr
+        # 需要填充的秒数
+        padding_needed = target_length - actual_length
+
+        # 获取最后1秒的音频数据用于填充
+        if snd.shape[0] > sr:  # 确保音频至少有1秒
+            last_second = snd[-sr:]
+        else:  # 音频不足1秒，就用全部内容
+            last_second = snd
+
+        # 计算需要重复的次数
+        repeat_times = int(np.ceil(padding_needed))
+
+        # 创建填充数据
+        padding_data = np.tile(last_second, (repeat_times, 1)) if len(snd.shape) > 1 else np.tile(last_second,
+                                                                                                  repeat_times)
+        needed_samples = int(padding_needed * sr)
+        padding_data = padding_data[:needed_samples]
+
+        # 合并原始音频和填充数据
+        padded_audio = np.vstack((snd, padding_data)) if len(snd.shape) > 1 else np.concatenate((snd, padding_data))
+
+        return padded_audio, sr
+    else:
+        # 音频长度足够，不需要填充
+        return snd, sr
+
+
+
 # Paths to downloaded VGGish files.
 checkpoint_path = 'vggish_model.ckpt'
 pca_params_path = 'vggish_pca_params.npz'
@@ -56,8 +93,33 @@ for n in range(len_data):
     num_secs_real = get_audio_len(audio_index)
     print("\nProcessing: ", i, " / ", len_data, " --------> video: ", lis[n], " ---> sec: ", num_secs_real)
 
+    # 如果音频长度不足60秒，使用填充处理
+    if num_secs_real < num_secs:
+        print(f"音频长度不足{num_secs}秒，使用最后1秒填充至{num_secs}秒")
+        # 使用自定义填充处理函数
+        from scipy.io import wavfile
 
-    input_batch = vggish_input.wavfile_to_examples(audio_index, num_secs)
+        padded_audio, sr_value = process_audio_with_padding(audio_index, num_secs)
+
+        # 创建临时文件保存填充后的音频
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        # 保存填充后的音频到临时文件
+        wavfile.write(temp_filename, sr_value, padded_audio.astype(np.int16))
+
+        # 使用填充后的临时文件进行特征提取
+        input_batch = vggish_input.wavfile_to_examples(temp_filename, num_secs)
+
+        # 处理完后删除临时文件
+        os.remove(temp_filename)
+    else:
+        # 正常处理，不需要填充
+        input_batch = vggish_input.wavfile_to_examples(audio_index, num_secs_real)
+
+    # input_batch = vggish_input.wavfile_to_examples(audio_index, num_secs)
     np.testing.assert_equal(
         input_batch.shape,
         [num_secs, vggish_params.NUM_FRAMES, vggish_params.NUM_BANDS])

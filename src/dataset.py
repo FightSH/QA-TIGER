@@ -183,12 +183,12 @@ class AVQA_dataset(Dataset):
     def __getitem__(self, index):
         sample = self.samples[index] # 根据索引获取原始样本信息
         batch = self.load_samples(sample) # 调用load_samples方法加载和预处理数据
-        print("Batch keys:", batch.keys())
-        for k, v in batch.items():
-            if hasattr(v, 'shape'):
-                print(f"{k} shape:", v.shape)
-            else:
-                print(f"{k}:", v)
+        # print("Batch keys:", batch.keys())
+        # for k, v in batch.items():
+        #     if hasattr(v, 'shape'):
+        #         print(f"{k} shape:", v.shape)
+        #     else:
+        #         print(f"{k}:", v)
 
         return batch
 
