@@ -69,7 +69,8 @@ def setting(args: argparse.Namespace) -> Tuple[Box, torch.device]:
     conf.seed = args.seed
     conf.mode = args.mode
     conf.debug = args.debug
-    conf.weight = args.weight
+    if(args.mode!='test'):
+        conf.weight = args.weight
     conf.output_path = args.output_path
     
     if args.topK > 0:
