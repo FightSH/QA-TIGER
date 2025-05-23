@@ -16,8 +16,8 @@ config = dict(
 		num_workers=8,  # 数据加载时使用的工作进程数
 		frame_sample_rate=1,  # 视频帧的采样率 (例如，每隔1帧取1帧)
 
-		audios_dir='./raw_audios',  # 原始音频文件的存放目录 (如果直接从原始文件加载)
-		frames_dir='./raw_frames',  # 原始视频帧的存放目录 (如果直接从原始帧加载)
+		audios_dir='/mnt/sda/shenhao/datasets/MUSIC-AVQA/audio',  # 原始音频文件的存放目录 (如果直接从原始文件加载)
+		frames_dir='/mnt/sda/shenhao/datasets/MUSIC-AVQA/frame_1fps',  # 原始视频帧的存放目录 (如果直接从原始帧加载)
 		train_annot='/mnt/sda/shenhao/code/QA-TIGER/data/annots/music_avqa/music_avqa_train.json',  # 训练集标注文件的路径
 		valid_annot='/mnt/sda/shenhao/code/QA-TIGER/data/annots/music_avqa/music_avqa_val.json',  # 验证集标注文件的路径
 		test_annot='/mnt/sda/shenhao/code/QA-TIGER/data/annots/music_avqa/music_avqa_test.json',  # 测试集标注文件的路径
@@ -27,14 +27,14 @@ config = dict(
 		# precomputed features - 预计算特征的路径配置
 		# 如果这些路径被设置，则直接加载预计算好的特征，否则会从原始数据进行在线提取或处理
 		quest_feat=None,  # 预计算的问题特征路径 (例如，使用BERT或CLIP文本编码器提取的特征)
-		audio_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/vggish',  # 预计算的音频特征路径 (例如，VGGish 特征)
+		audio_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/ownvggish',  # 预计算的音频特征路径 (例如，VGGish 特征)
 		video_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/clip_feats/1fps',  # 预计算的视频帧级别特征路径 (例如，使用CLIP ViT-L/14@336px 提取的特征)
-		patch_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14_60',  # 预计算的视频patch级别特征路径 (例如，使用ToMe处理后的视觉特征)
+		patch_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14',  # 预计算的视频patch级别特征路径 (例如，使用ToMe处理后的视觉特征)
 		prompt_feat=None,  # 预计算的提示特征路径 (如果使用了特定的prompt)
 	),
 
 	hyper_params=dict(  # 超参数配置
-		gpus='0',  # 使用的GPU ID (例如 '0', '0,1')
+		gpus='3',  # 使用的GPU ID (例如 '0', '0,1')
 		model_type="QA-TIGER_ViTL14@336px",  # 模型的具体类型或版本名
 		model=dict(  # 模型架构相关的参数
 			d_model=512,  # 模型内部的主要隐藏层维度

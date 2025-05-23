@@ -128,4 +128,4 @@ if __name__ == "__main__":
                                                 num_workers=16,
                                                 batch_size=B, shuffle=False)
             get_tome_feat(model_size='large', patch_size=16, image_size=384,
-                          save_dir="./data/feats/visual_tome14")
+                          save_dir="/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14_2")
