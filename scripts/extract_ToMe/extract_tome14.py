@@ -9,9 +9,9 @@ from PIL import Image
 import numpy as np
 import argparse
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
-os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
 class Identity(nn.Module):
 
     def __init__(self):
@@ -51,35 +51,28 @@ class Identity(nn.Module):
 
 
 def TransformImage(img, input_size, mean, std):
-
-	transform_list = [transforms.Resize(int((256 / 224) * input_size), interpolation=InterpolationMode.BICUBIC),
-					  transforms.CenterCrop(input_size)
+    transform_list = [transforms.Resize(int((256 / 224) * input_size), interpolation=InterpolationMode.BICUBIC),
+                      transforms.CenterCrop(input_size)
                       # transforms.Resize([384,384])
-					 ]
+                      ]
 
-	# The visualization and model need different transforms
-	transform_vis  = transforms.Compose(transform_list)
-	transform_norm = transforms.Compose(transform_list + [transforms.ToTensor(),
-														  transforms.Normalize(mean, std),
-														  ])
+    # The visualization and model need different transforms
+    transform_vis = transforms.Compose(transform_list)
+    transform_norm = transforms.Compose(transform_list + [transforms.ToTensor(),
+                                                          transforms.Normalize(mean, std),
+                                                          ])
 
-	return transform_vis(img), transform_norm(img)
-
-
-
-
-
-
+    return transform_vis(img), transform_norm(img)
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", dest='gpu', type=str, default='3',
+    parser.add_argument("--gpu", dest='gpu', type=str, default='0',
                         help='Set CUDA_VISIBLE_DEVICES environment variable, optional')
-    parser.add_argument("--dir_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/avqa_frame_1fps/',
+    parser.add_argument("--dir_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/frames/',
                         help='sec path')
-    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/visual_tome14',
+    parser.add_argument("--dst_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/qa_tiger/tome_feat/',
                         help='sec save path')
     parser.add_argument("--sample_frames", type=int, default=60, help='sample frames')
     parser.add_argument("--tokens", type=int, default=14, help='merge tokens numbers')
@@ -87,10 +80,8 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", type=str, default="vit_large_patch16_384", help='model_name')
     parser.add_argument("--global_pool", type=str, default="None", help='global_pool')
 
-
-
     args = parser.parse_args()
-    # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     params = vars(args)
 
     model_name = args.model_name
@@ -106,8 +97,6 @@ if __name__ == "__main__":
 
     # model = nn.DataParallel(model).cuda()
     model = model.to('cuda')
-    
-
 
     video_list = os.listdir(args.dir_path)
     video_list.sort()
@@ -118,7 +107,7 @@ if __name__ == "__main__":
 
         cnt += 1
         print("\n-->: ", cnt, "/", video_nums, " --- ", video_name)
-        
+
         output_file_path = os.path.join(args.dst_path, video_name + ".npy")
         if os.path.exists(output_file_path):
             print("This file is already processed!")
@@ -127,31 +116,15 @@ if __name__ == "__main__":
         img_list_path = os.path.join(args.dir_path, video_name)
         img_list_all = os.listdir(img_list_path)
 
-        target_frames = args.sample_frames
-        actual_num_frames = len(img_list_all)
+        samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
+        samples = np.round(np.linspace(0, args.params_frames - 1, args.params_frames))
 
-        if actual_num_frames >= target_frames:
-            # 视频帧数足够或更多：均匀采样 target_frames 帧
-            indices = np.round(np.linspace(0, actual_num_frames - 1, target_frames)).astype(int)
-            img_list = [img_list_all[i] for i in indices]
-        else:
-            # 视频帧数不足 target_frames：取所有帧，然后用最后一帧填充
-            img_list = list(img_list_all)  # 取所有可用帧
-            num_padding = target_frames - actual_num_frames
-            if num_padding > 0 and img_list:  # 确保有帧可以用来填充
-                padding_frame_path = img_list[-1]  # 用最后一帧进行填充
-                img_list.extend([padding_frame_path] * num_padding)
-            elif not img_list:  # 理论上不会到这里，因为上面有 actual_num_frames == 0 的检查
-                continue
-
-        # samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
-        # img_list = [img_list_all[int(sample)] for sample in samples]
+        img_list = [img_list_all[int(sample)] for sample in samples]
 
         token_feat = torch.zeros([args.sample_frames, args.tokens, 1024])
 
         idx = 0
         for img_name in img_list:
-
             img_file = os.path.join(img_list_path, img_name)
             img = Image.open(img_file)
             # img_vis = transform_vis(img)
@@ -162,7 +135,7 @@ if __name__ == "__main__":
             model.r = [25] * args.layers
 
             with torch.no_grad():
-	            output = model(img_tensor.to('cuda'))
+                output = model(img_tensor.to('cuda'))
 
             # output = model(img_tensor.cuda())
             # print("output: ", output.shape)
@@ -178,11 +151,9 @@ if __name__ == "__main__":
             # vis_img.save(save_name)
             # img_vis.save(save_name_org)
 
-
         token_feat = token_feat.detach().cpu().numpy()
         assert token_feat.shape == (args.sample_frames, args.tokens, 1024)
 
         np.save(output_file_path, token_feat)
-
 
     print("\n------------> finished <-----------------------")
