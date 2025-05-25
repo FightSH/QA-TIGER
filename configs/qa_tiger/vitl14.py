@@ -4,7 +4,8 @@ config = dict(
     epochs=15,
     num_labels=42,
     log_interval=100,
-    output_dir='./runs/music_avqa/qa-tiger_clip_vitl14@336px',
+    output_dir='/mnt/sda/shenhao/code/QA-TIGER/qa-tiger_clip_vitl14@336px',
+
     pretrained_weight="base",
     data=dict(
         root='./data',
@@ -13,9 +14,8 @@ config = dict(
         eval_batch_size=32,
         num_workers=16,
         frame_sample_rate=1,
-
-        audios_dir='./raw_audios',
-        frames_dir='./raw_frames',
+        audios_dir='/mnt/sda/shenhao/datasets/MUSIC-AVQA/audio',
+        frames_dir='./mnt/sda/shenhao/datasets/MUSIC-AVQA/frames',
         train_annot='./annots/music_avqa/music_avqa_train.json',
         valid_annot='./annots/music_avqa/music_avqa_val.json',
         test_annot='./annots/music_avqa/music_avqa_test.json',
@@ -24,9 +24,9 @@ config = dict(
 
         # precomputed features
         quest_feat=None,
-        audio_feat='./feats/vggish',
-        video_feat='./feats/frame_ViT-L14@336px',
-        patch_feat='./feats/visual_tome14',
+        audio_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/qa_tiger/audit_feat/60vggish/',
+        video_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/qa_tiger/clip_feat/',
+        patch_feat='/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/qa_tiger/tome_feat/',
         prompt_feat=None,
     ),
 

@@ -30,10 +30,10 @@ class AverageMeter(object):
     def __init__(self) -> None:
         super().__init__()
         self.reset()
-    
+
     def reset(self):
         self.values = defaultdict(float)
-        self.count  = 0
+        self.count = 0
 
     def update(self, val: List[Tuple[str, float]], step_n: int):
         for key, val in val:
@@ -56,7 +56,6 @@ def gather_losses(epoch: int,
                   writer: SummaryWriter,
                   device: torch.device,
                   ) -> float:
-
     if dist.is_initialized():
         # Gather metrics from all processes
         gather_losses = []
@@ -65,7 +64,7 @@ def gather_losses(epoch: int,
                 gather_v = torch.tensor(value).to(device)
                 dist.all_reduce(gather_v, op=dist.ReduceOp.SUM)
                 gather_losses.append((key, gather_v.item() / dist.get_world_size()))
-        
+
         if dist.get_rank() == 0:
             for (key, value) in gather_losses:
                 writer.add_scalar(f'train/loss/{key}', value,
@@ -75,41 +74,41 @@ def gather_losses(epoch: int,
         for (key, value) in losses:
             if writer is not None:
                 writer.add_scalar(f'train/loss/{key}', value,
-                                (epoch - 1) * loader_size + batch_idx)
+                                  (epoch - 1) * loader_size + batch_idx)
         return losses
 
 
 def get_model(cfg: dict,
               device: torch.device):
-    hyper_params = cfg.hyper_params 
-    
+    hyper_params = cfg.hyper_params
+
     if hyper_params.model_type.startswith('QA-TIGER'):
         model = QA_TIGER(**hyper_params.model)
     elif hyper_params.model_type.startswith('TSPM'):
         model = TSPM(**hyper_params.model)
     else:
         raise NotImplementedError(f"Model type {hyper_params.model_type} is not implemented")
-    
+
     model = model.to(device)
     if cfg.weight is not None and cfg.weight != '':
         logger = get_logger()
-        
+
         weight = cfg.weight
         msg = model.load_state_dict(torch.load(weight), strict=False)
         logger.info(f'Missing keys: {json.dumps(msg.missing_keys, indent=4)}')
         logger.info(f'Unexpected keys: {json.dumps(msg.unexpected_keys, indent=4)}')
         logger.info(f"=> loaded successfully '{weight}'")
-    
+
     if dist.is_initialized():
         model = DDP(model,
-                    device_ids=[dist.get_rank()], 
+                    device_ids=[dist.get_rank()],
                     find_unused_parameters=False)
     else:
         model = nn.DataParallel(model)
-    
+
     if cfg.mode == 'train':
         calculate_parameters(model)
-    
+
     return model
 
 
@@ -117,19 +116,19 @@ def get_optim(cfg: dict,
               model: nn.Module,
               train_loader: DataLoader):
     logger = get_logger()
-    
+
     if cfg.hyper_params.optim.encoder_lr is not None:
         m = model.module if hasattr(model, 'module') else model
-        
+
         other_params = [
             param for name, param in model.named_parameters() \
             if 'video_encoder' not in name and 'quest_encoder' not in name and \
-                'audio_encoder' not in name and 'mllm' not in name
+               'audio_encoder' not in name and 'mllm' not in name
         ]
         encoder_params = [
             param for name, param in model.named_parameters() \
             if 'video_encoder' in name or 'quest_encoder' in name or \
-                'audio_encoder' in name or 'mllm' in name
+               'audio_encoder' in name or 'mllm' in name
         ]
         params = [
             {'params': other_params, 'lr': cfg.hyper_params.optim.lr},
@@ -137,12 +136,12 @@ def get_optim(cfg: dict,
         ]
     else:
         params = model.parameters()
-    
-    optimizer = optim.Adam(params, 
+
+    optimizer = optim.Adam(params,
                            lr=cfg.hyper_params.optim.lr,
                            weight_decay=cfg.hyper_params.optim.weight_decay,
                            betas=cfg.hyper_params.optim.betas)
-    
+
     for param_group in optimizer.param_groups:
         logger.info("\n-------------- optimizer info --------------")
         logger.info(f'Learning rate: {param_group["lr"]}')
@@ -152,13 +151,13 @@ def get_optim(cfg: dict,
 
     if 'cosine' in cfg.hyper_params.sched.name:
         from timm.scheduler.cosine_lr import CosineLRScheduler
-        
+
         scheduler = CosineLRScheduler(
             optimizer,
             t_initial=cfg.epochs,
             lr_min=cfg.hyper_params.optim.min_lr,
             cycle_mul=1.0, cycle_decay=1.0, cycle_limit=1,
-            warmup_t=cfg.hyper_params.sched.warmup_epochs, 
+            warmup_t=cfg.hyper_params.sched.warmup_epochs,
             warmup_lr_init=cfg.hyper_params.optim.min_lr,
             warmup_prefix=False,
             t_in_epochs=True,
@@ -178,7 +177,7 @@ def get_optim(cfg: dict,
             factor=cfg.hyper_params.sched.factor,
             patience=cfg.hyper_params.sched.patience,
             verbose=cfg.hyper_params.sched.verbose)
-    
+
     return optimizer, scheduler
 
 
@@ -187,27 +186,28 @@ def get_dloaders(cfg: dict) -> Dict[str, DataLoader]:
 
     train_dataset = AVQA_dataset(cfg, mode=cfg.mode)
     val_dataset = AVQA_dataset(cfg, mode='valid')
-    
+
     if dist.is_initialized():
         train_sampler = DistributedSampler(train_dataset)
         valid_sampler = DistributedSampler(val_dataset, shuffle=False)
         b_size = hyper_params.batch_size // dist.get_world_size()
+
         def seed_worker(worker_id):
-            worker_seed = torch.initial_seed() % 2**32
+            worker_seed = torch.initial_seed() % 2 ** 32
             np.random.seed(worker_seed)
             random.seed(worker_seed)
     else:
         train_sampler = None
         valid_sampler = None
         b_size = hyper_params.batch_size
-        
-    train_loader = DataLoader(train_dataset, 
-                                batch_size=b_size,
-                                shuffle=(train_sampler is None) and (cfg.mode == 'train'), 
-                                num_workers=hyper_params.num_workers,
-                                pin_memory=True,
-                                worker_init_fn=seed_worker if dist.is_initialized() else None,
-                                sampler=train_sampler)
+
+    train_loader = DataLoader(train_dataset,
+                              batch_size=b_size,
+                              shuffle=(train_sampler is None) and (cfg.mode == 'train'),
+                              num_workers=hyper_params.num_workers,
+                              pin_memory=True,
+                              worker_init_fn=seed_worker if dist.is_initialized() else None,
+                              sampler=train_sampler)
     val_loader = DataLoader(val_dataset,
                             batch_size=hyper_params.eval_batch_size,
                             shuffle=False,
@@ -258,13 +258,13 @@ def train(cfg: dict,
           criterion: nn.Module,
           model: nn.Module,
           writer: SummaryWriter = None,
-    ):
+          ):
     logger = get_logger()
-    
+
     model.train()
     avg_meter = AverageMeter()
     tot_batch = len(train_loader) - 1
-    
+
     epoch_time = time.time()
     for batch_idx, sample in enumerate(train_loader):
         start_time = time.time()
@@ -272,7 +272,7 @@ def train(cfg: dict,
         reshaped_data = get_items(sample, device)
         optimizer.zero_grad()
         output = model(reshaped_data)
-        
+
         loss = 0
         target = reshaped_data['label']
         ce_loss = criterion(output['out'], target)
@@ -289,9 +289,9 @@ def train(cfg: dict,
         losses = gather_losses(epoch, batch_idx, tot_batch,
                                losses, writer, device)
         avg_meter.update(losses, step_n=1)
-        
+
         if batch_idx % cfg.log_interval == 0 or batch_idx == len(train_loader) - 1:
-            batch_t = time.time() - start_time 
+            batch_t = time.time() - start_time
             elapsed_t = time.time() - epoch_time
             avg_time = elapsed_t / (batch_idx + 1)
             est_time = (tot_batch - batch_idx - 1) * avg_time / 60
@@ -307,28 +307,28 @@ def train(cfg: dict,
                 ' '.join([f'{key}-{value:.4f}({avg_meter.get(key):.4f})' for key, value in losses])
             )
             logger.info(msg=log_string + loss_string)
-        
+
         if cfg.debug and batch_idx == 10:
             break
 
 
 def evaluate(cfg: dict,
-            epoch: int,
-            device: torch.device,
-            val_loader: DataLoader,
-            criterion: nn.Module,
-            model: nn.Module,
-            writer: SummaryWriter = None):
+             epoch: int,
+             device: torch.device,
+             val_loader: DataLoader,
+             criterion: nn.Module,
+             model: nn.Module,
+             writer: SummaryWriter = None):
     global qtype2idx
-    
+
     logger = get_logger()
     model.eval()
-    
+
     loss = 0
     total, correct = 0, 0
     tot_tensor = torch.zeros(9, dtype=torch.long).to(device)
     correct_tensor = torch.zeros(9, dtype=torch.long).to(device)
-    
+
     with torch.no_grad():
         for batch_idx, sample in enumerate(val_loader):
             reshaped_data = get_items(sample, device)
@@ -344,24 +344,24 @@ def evaluate(cfg: dict,
                 gather_idx = qtype2idx[modal_type][qst_type]
                 tot_tensor[gather_idx] += 1
                 correct_tensor[gather_idx] += (predicted[idx] == target[idx]).long().item()
-        
+
             if cfg.debug and batch_idx == 10:
                 break
-        
+
             if batch_idx % cfg.log_interval == 0 or batch_idx == len(val_loader) - 1:
                 logger.info(f'Test progress: {batch_idx:3.0f}/{len(val_loader) - 1}')
 
-    sync_processes()    
+    sync_processes()
     if dist.is_initialized():
         correct = torch.tensor(correct).to(device)
         total = torch.tensor(total).to(device)
-        
+
         dist.all_reduce(correct, op=dist.ReduceOp.SUM)
-        dist.all_reduce(total, op=dist.ReduceOp.SUM)    
+        dist.all_reduce(total, op=dist.ReduceOp.SUM)
         for idx in range(9):
             dist.all_reduce(tot_tensor[idx], op=dist.ReduceOp.SUM)
             dist.all_reduce(correct_tensor[idx], op=dist.ReduceOp.SUM)
-    
+
     acc = correct / total * 100.
     loss = loss.item()
     if writer is not None:
@@ -370,20 +370,20 @@ def evaluate(cfg: dict,
     for modality in ['Audio', 'Visual', 'Audio-Visual']:
         modality_corr = 0
         modality_tot = 0
-        
+
         for qst_type in qtype2idx[modality]:
             corr = correct_tensor[qtype2idx[modality][qst_type]].item()
             tot = tot_tensor[qtype2idx[modality][qst_type]].item()
-            
+
             modality_corr += corr
             modality_tot += tot
             value = corr / tot * 100.
-            
+
             key = f'{modality}/{qst_type}'
             logger.info(f'Epoch {epoch} - {key:>24} accuracy: {value:.2f}({corr}/{tot})')
             if writer is not None:
                 writer.add_scalar(f'valid/acc/{key}', corr / tot * 100., epoch)
-        
+
         modality_acc = modality_corr / modality_tot * 100.
         logger.info(f'Epoch {epoch} - {modality:>24} accuracy: {modality_acc:.2f}({modality_corr}/{modality_tot})')
         if writer is not None:
@@ -399,14 +399,14 @@ def test(cfg: dict,
          val_loader: DataLoader,
          model: nn.Module):
     global qtype2idx
-    
+
     logger = get_logger()
     model.eval()
 
     total, correct = 0, 0
     tot_tensor = torch.zeros(9, dtype=torch.long).to(device)
     correct_tensor = torch.zeros(9, dtype=torch.long).to(device)
-    
+
     with torch.no_grad():
         for batch_idx, sample in enumerate(val_loader):
             reshaped_data = get_items(sample, device)
@@ -432,7 +432,7 @@ def test(cfg: dict,
     if dist.is_initialized():
         correct = torch.tensor(correct).to(device)
         total = torch.tensor(total).to(device)
-        
+
         dist.all_reduce(correct, op=dist.ReduceOp.SUM)
         dist.all_reduce(total, op=dist.ReduceOp.SUM)
         for idx in range(9):
@@ -443,18 +443,18 @@ def test(cfg: dict,
     for modality in ['Audio', 'Visual', 'Audio-Visual']:
         modality_corr = 0
         modality_tot = 0
-        
+
         for qst_type in qtype2idx[modality]:
             corr = correct_tensor[qtype2idx[modality][qst_type]].item()
             tot = tot_tensor[qtype2idx[modality][qst_type]].item()
-            
+
             modality_corr += corr
             modality_tot += tot
             value = corr / tot * 100.
-            
+
             key = f'{modality}/{qst_type}'
             logger.info(f'Test {key:>24} accuracy: {value:.2f}({corr}/{tot})')
-        
+
         modality_acc = modality_corr / modality_tot * 100.
         logger.info(f'Test {modality:>24} accuracy: {modality_acc:.2f}({modality_corr}/{modality_tot})')
     key = 'Total avg'

@@ -100,7 +100,7 @@ class AVQA_dataset(Dataset):
         else:
             question = sample['question_content']
             quest = self.tokenizer(question, truncate=True).squeeze()
-            prompt = self.tokenizer(sample['qprompt'], truncate=True).squeeze()
+            # prompt = self.tokenizer(sample['qprompt'], truncate=True).squeeze()
 
         # sampling frames
         name = sample['video_id']
@@ -136,7 +136,7 @@ class AVQA_dataset(Dataset):
 
         data = {
             'quest': quest,
-            'prompt': prompt,
+            # 'prompt': prompt,
             'type': ques_type,
             'label': labels,
             'qtype_label': qtype_label,
