@@ -70,7 +70,7 @@ freq = 1000
 sr = 44100
 
 audio_dir = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/audio/"  # .wav audio files
-save_dir = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/ownvggish/"
+save_dir = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/feats/qa_tiger/audit_feat/60vggish"
 
 lis = sorted(os.listdir(audio_dir))
 len_data = len(lis)
@@ -143,4 +143,5 @@ for n in range(len_data):
         i += 1
 
 print("\n---------------------------------- end ----------------------------------\n")
+
 

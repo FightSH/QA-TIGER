@@ -17,7 +17,7 @@ if __name__ == "__main__":
     dir_path = '/mnt/sda/shenhao/datasets/MUSIC-AVQA/'
     dst_path = '/mnt/sda/shenhao/datasets/MUSIC-AVQA/frames/'
 
-    process_count = 0
+    process_count = 1
     fix_second = 60
     fps_count = 1
 

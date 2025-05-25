@@ -51,12 +51,12 @@ def pool_process(video_pth, save_pth, pool=None):
 
 
 if __name__ == "__main__":
-    video_pth = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/"
+    video_pth = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/MUSIC-AVQA2"
     save_pth = "/mnt/sda/shenhao/datasets/MUSIC-AVQA/audio/"
 
     # multiprocessing
     cpu_count = multiprocessing.cpu_count()  # cpu nums, 获取CPU核数
-    process_count = cpu_count * 2 - 1  # thread nums, 获取最大线程数
+    process_count = 8 # thread nums, 获取最大线程数
     pool = multiprocessing.Pool(process_count)
 
     pool_process(video_pth, save_pth, pool)

@@ -86,12 +86,12 @@ if __name__ == "__main__":
     from src.dataset import AVQA_dataset
     from configs.music_avqa.ours_vitl14 import config as conf_vitl14
     from configs.music_avqa.ours_vitb32 import config as conf_vitb32
-    
+
     import torch
     import src.tome as tome
     import timm
     
-    model_type = 'vitb32'
+    model_type = 'vitl14'
     if model_type == "vitb32":
         conf_vitb32 = Box(conf_vitb32)
         conf_vitb32.debug = True

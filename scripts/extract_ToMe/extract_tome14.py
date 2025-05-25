@@ -9,7 +9,7 @@ from PIL import Image
 import numpy as np
 import argparse
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
 
 
 class Identity(nn.Module):
@@ -68,7 +68,7 @@ def TransformImage(img, input_size, mean, std):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", dest='gpu', type=str, default='0',
+    parser.add_argument("--gpu", dest='gpu', type=str, default='3',
                         help='Set CUDA_VISIBLE_DEVICES environment variable, optional')
     parser.add_argument("--dir_path", type=str, default='/mnt/sda/shenhao/datasets/MUSIC-AVQA/frames/',
                         help='sec path')
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("--global_pool", type=str, default="None", help='global_pool')
 
     args = parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     params = vars(args)
 
     model_name = args.model_name
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     std = model.default_cfg["std"]
 
     # model = nn.DataParallel(model).cuda()
-    model = model.to('cuda')
+    model = model.to(device)
 
     video_list = os.listdir(args.dir_path)
     video_list.sort()
@@ -116,11 +116,11 @@ if __name__ == "__main__":
         img_list_path = os.path.join(args.dir_path, video_name)
         img_list_all = os.listdir(img_list_path)
 
-        samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
-        samples = np.round(np.linspace(0, args.params_frames - 1, args.params_frames))
+        # samples = np.linspace(0, len(img_list_all) - 2, args.sample_frames, dtype=int)
+        # samples = np.round(np.linspace(0, args.params_frames - 1, args.params_frames))
 
-        img_list = [img_list_all[int(sample)] for sample in samples]
-
+        # img_list = [img_list_all[int(sample)] for sample in samples]
+        img_list = img_list_all
         token_feat = torch.zeros([args.sample_frames, args.tokens, 1024])
 
         idx = 0
@@ -135,7 +135,8 @@ if __name__ == "__main__":
             model.r = [25] * args.layers
 
             with torch.no_grad():
-                output = model(img_tensor.to('cuda'))
+                # output = model(img_tensor.to('cuda'))
+                output = model(img_tensor.to(device))
 
             # output = model(img_tensor.cuda())
             # print("output: ", output.shape)

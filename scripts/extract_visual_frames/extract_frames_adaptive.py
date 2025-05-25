@@ -22,6 +22,7 @@ import logging
 import time
 import sys
 import multiprocessing
+import threading
 from imageio import imsave
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import warnings
@@ -211,22 +212,70 @@ def process_dir_path_class(param):
         logger.error("process(%s) error", dir_path_class, e)
 
 
-def deal_dir(dir_path, dst_path, fix_second, fps_count, pool=None):
-    print("----------------------------------")
 
-    logger.info("----- deal dir: (%s), to path: (%s) -----", dir_path, dst_path)
+
+
+def process_single_video(param):
+    """
+    处理单个视频文件的函数，用于多进程调用
+
+    参数:
+        param: 包含视频处理所需信息的字典
+    """
+    # 获取当前进程和线程信息
+    process_name = multiprocessing.current_process().name
+    thread_name = threading.current_thread().name
+
+    try:
+        video_file = param['video_file']
+        out_path = param['out_path']
+        fix_second = param['fix_second']
+        fps_count = param['fps_count']
+
+        # 检查目标路径是否已存在
+        if os.path.exists(out_path):
+            # print(f"[{process_name}-{thread_name}] 视频 {os.path.basename(video_file)} 已提取过帧")
+            return
+
+        # 调用实际处理视频的函数
+        deal_video(video_file, out_path, fix_second, fps_count)
+        print(f"[{process_name}-{thread_name}] 完成视频 {os.path.basename(video_file)} 的帧提取")
+    except Exception as e:
+        logger.error(f"[{process_name}-{thread_name}] 处理视频 {param.get('video_file', '未知')} 时出错: {e}")
+
+def deal_dir(dir_path, dst_path, fix_second, fps_count, pool=None):
+    files = os.listdir(dir_path)
     request_param = []
 
-    param = {'dir_path_class': dir_path, 'dst_path_class': dst_path, "fix_second": fix_second, "fps_count": fps_count}
-    if pool is None:
-        process_dir_path_class(param)
-    else:
+    # 为每个视频文件创建一个任务
+    for video_file in files:
+        name, ext = os.path.splitext(video_file)
+        out_path = os.path.join(dst_path, name)
+        param = {
+            'video_file': os.path.join(dir_path, video_file),
+            'out_path': out_path,
+            'fix_second': fix_second,
+            'fps_count': fps_count
+        }
         request_param.append(param)
-
-    if pool is not None:
-        pool.map(process_dir_path_class, request_param)
-        pool.close()
-        pool.join()
+    # 并行处理所有视频文件
+    pool.map(process_single_video, request_param)
+# def deal_dir(dir_path, dst_path, fix_second, fps_count, pool=None):
+#     print("----------------------------------")
+#
+#     logger.info("----- deal dir: (%s), to path: (%s) -----", dir_path, dst_path)
+#     request_param = []
+#
+#     param = {'dir_path_class': dir_path, 'dst_path_class': dst_path, "fix_second": fix_second, "fps_count": fps_count}
+#     if pool is None:
+#         process_dir_path_class(param)
+#     else:
+#         request_param.append(param)
+#
+#     if pool is not None:
+#         pool.map(process_dir_path_class, request_param)
+#         pool.close()
+#         pool.join()
 
 
 logger = log_config()
